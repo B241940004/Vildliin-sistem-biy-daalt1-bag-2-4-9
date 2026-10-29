@@ -35,24 +35,36 @@ static void *worker_main(void *arg) {
 }
 
 int pool_init(threadpool_t *p, int workers, int queue_cap, event_cb cb) {
+    if (workers < 1 || queue_cap < 1) return 1;
     p->queue = malloc(sizeof(task_t) * queue_cap);
     p->workers = malloc(sizeof(worker_t) * workers);
-    if (!p->queue || !p->workers) return 1;
+    if (!p->queue || !p->workers) {
+        free(p->queue);
+        free(p->workers);
+        p->queue = NULL;
+        p->workers = NULL;
+        return 1;
+    }
     p->cap = queue_cap; p->head = p->tail = p->count = 0;
-    p->shutdown = 0; p->nworkers = workers; p->cb = cb;
+    p->shutdown = 0; p->nworkers = 0; p->cb = cb;
     pthread_mutex_init(&p->lock, NULL);
     pthread_cond_init(&p->not_empty, NULL);
     for (int i = 0; i < workers; i++) {
         p->workers[i].id = i + 1;
         p->workers[i].pool = p;
-        pthread_create(&p->workers[i].tid, NULL, worker_main, &p->workers[i]);
+        if (pthread_create(&p->workers[i].tid, NULL, worker_main, &p->workers[i]) != 0) {
+            p->nworkers = i;
+            pool_shutdown(p);
+            return 1;
+        }
+        p->nworkers = i + 1;
     }
     return 0;
 }
 
 int pool_submit(threadpool_t *p, void (*f)(void *), void *data, int task_id) {
     pthread_mutex_lock(&p->lock);
-    if (p->count == p->cap) {
+    if (p->shutdown || p->count == p->cap) {
         emit(p, "rejected", 0, task_id);
         pthread_mutex_unlock(&p->lock);
         return 1;
@@ -67,6 +79,7 @@ int pool_submit(threadpool_t *p, void (*f)(void *), void *data, int task_id) {
 }
 
 void pool_shutdown(threadpool_t *p) {
+    if (!p->workers) return;
     pthread_mutex_lock(&p->lock);
     p->shutdown = 1;
     pthread_cond_broadcast(&p->not_empty);
@@ -77,4 +90,6 @@ void pool_shutdown(threadpool_t *p) {
     pthread_cond_destroy(&p->not_empty);
     free(p->queue);
     free(p->workers);
+    p->queue = NULL;
+    p->workers = NULL;
 }

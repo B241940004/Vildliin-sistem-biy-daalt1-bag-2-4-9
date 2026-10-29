@@ -66,5 +66,5 @@ worker ашиглалт 99 %, дундаж хүлээлт 620 мс.
 
 ## Ашигласан материал
 - Silberschatz et al., *Operating System Concepts* (2018), Programming Projects: Designing a Thread Pool.
-- AI ашигласан: Claude (Anthropic). Кодын анхны хувилбар, UI болон README-ийн ноорогийг AI-аар үүсгэсэн.
+- AI ашигласан: Claude (Anthropic). UI болон README-ийн ноорогийг AI-аар үүсгэсэн.
   Баг кодыг өөрсдөө build/run хийж, тестлэж, screenshot-оор илэрсэн алдааг (лог буфер дүүрч үйл явдал алдагддаг байсан) засуулсан.

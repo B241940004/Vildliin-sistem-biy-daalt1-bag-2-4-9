@@ -1,11 +1,16 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -O2 -pthread
+CC ?= cc
+CFLAGS ?= -O2 -Wall -Wextra -pthread
 
-tpdemo: src/tpdemo.c src/threadpool.c src/threadpool.h
-	$(CC) $(CFLAGS) -o tpdemo src/tpdemo.c src/threadpool.c
+tpdemo: tpdemo.c threadpool.c threadpool.h
+	$(CC) $(CFLAGS) -o $@ tpdemo.c threadpool.c
+
+tsan:
+	$(CC) -O1 -g -Wall -Wextra -pthread -fsanitize=thread -o tpdemo tpdemo.c threadpool.c
 
 test: tpdemo
 	sh tests/run_tests.sh
 
 clean:
 	rm -f tpdemo
+
+.PHONY: tsan test clean

@@ -22,6 +22,8 @@ submit / start / done / idle / rejected үйл явдлуудыг бүртгэн
 ## Quick Start
 Шаардлага: Linux/macOS (WSL), `gcc`, `make`, Python 3.
 ```
+git clone https://github.com/Huslenc/Vildliin-sistem-biy-daalt1-bag-2-4-9.git
+cd Vildliin-sistem-biy-daalt1-bag-2-4-9
 make
 make test
 python3 serve.py
